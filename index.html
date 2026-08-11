@@ -11,6 +11,7 @@
 <!-- Firebase SDK (CDN) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <link rel="stylesheet" href="hanja-kr-styles.css">
 </head>
 <body>
@@ -20,6 +21,7 @@
     <span class="name">한자능력검정시험 학습</span>
     <span class="line-title-right">
       <span class="sub" id="lineSub">급수별 훈음 완주</span>
+      <button id="loginBtn" class="login-btn" title="Google 로그인 (일일 학습 기록 동기화)" aria-label="로그인">로그인</button>
       <button id="themeToggle" class="theme-toggle" title="라이트/다크 모드 전환" aria-label="테마 전환">🌙</button>
     </span>
   </div>
@@ -67,7 +69,35 @@
         <span class="weekly-badge">한자 일일 학습</span>
         <span class="weekly-sub" id="studySub">망각곡선 기반 복습</span>
       </div>
-      <button class="primary go weekly-go" id="dailyStudyBtn">한자 일일 학습 시작 →</button>
+
+      <div class="group-label" style="text-align:left;">오늘 새로 배울 급수</div>
+      <div class="lengths lengths-grid3" id="studyGradePicker">
+        <button data-grade="1">8급</button>
+        <button data-grade="2">7급Ⅱ</button>
+        <button data-grade="3">7급</button>
+        <button data-grade="4">6급Ⅱ</button>
+        <button data-grade="5">6급</button>
+        <button data-grade="6">5급Ⅱ</button>
+        <button data-grade="7">5급</button>
+        <button data-grade="8">4급Ⅱ</button>
+        <button data-grade="9" class="active">4급</button>
+        <button data-grade="10">3급Ⅱ</button>
+        <button data-grade="11">3급</button>
+        <button data-grade="12">2급</button>
+        <button data-grade="13">1급</button>
+        <button data-grade="14">특급Ⅱ</button>
+        <button data-grade="15">특급</button>
+      </div>
+
+      <div class="group-label" style="text-align:left; margin-top:14px;">일일 신규 목표량</div>
+      <div class="lengths" id="dailyGoalPicker">
+        <button data-goal="10">10자</button>
+        <button data-goal="20" class="active">20자</button>
+        <button data-goal="30">30자</button>
+        <button data-goal="50">50자</button>
+      </div>
+
+      <button class="primary go weekly-go" id="dailyStudyBtn" style="margin-top:16px;">한자 일일 학습 시작 →</button>
     </div>
   </div>
 
@@ -92,7 +122,7 @@
     <div class="rating-row hidden" id="studyRatingRow">
       <button class="giveup" id="rateAgain">다시</button>
       <button id="rateHard">어려움</button>
-      <button class="primary" id="rateGood">알맞음</button>
+      <button id="rateGood">알맞음</button>
       <button id="rateEasy">쉬움</button>
     </div>
   </div>
@@ -163,6 +193,7 @@
 <script src="hanja-kr-data.js"></script>
 <script src="fsrs-kr.js"></script>
 <script src="hanja-kr-srs.js"></script>
+<script src="hanja-kr-sync.js"></script>
 <script src="hanja-kr-app.js"></script>
 </body>
 </html>

@@ -347,20 +347,57 @@ el('startBtn').addEventListener('click', startGame);
 const studyScreen = el('studyScreen');
 const studyDoneScreen = el('studyDoneScreen');
 const srs = HanjaSRS.createSRS(window.localStorage);
-const DAILY_NEW_LIMIT = 20;
+
+let studyGrade = 9;   // 오늘 신규로 배울 급수 (단독, 누적 아님) - 기본 4급
+let dailyGoal = parseInt(localStorage.getItem('hanja-kr-daily-goal') || '20');
 
 let studyQueue = [];   // 오늘 풀 카드들 (review + new 합친 것)
 let studyIdx = 0;
 let studyCurrent = null;
 
+// KRDATA1~15 배열을 급수 번호로 바로 찾기 위한 매핑 (단독 급수용, GRADES[i].data는 누적이라 이 용도엔 안 맞음)
+const KRDATA_BY_GRADE = {
+  1:KRDATA1,2:KRDATA2,3:KRDATA3,4:KRDATA4,5:KRDATA5,6:KRDATA6,7:KRDATA7,
+  8:KRDATA8,9:KRDATA9,10:KRDATA10,11:KRDATA11,12:KRDATA12,13:KRDATA13,14:KRDATA14,15:KRDATA15
+};
+
 function updateStudySub(){
-  const s = srs.stats(KR_ALL_DATA);
-  el('studySub').textContent = `누적 학습 ${s.learned}자 · 오늘 복습 예정 ${s.dueToday}자`;
+  const scope = KRDATA_BY_GRADE[studyGrade];
+  const s = srs.stats(scope);
+  const gradeLabel = GRADES[studyGrade].label;
+  el('studySub').textContent = `${gradeLabel} 학습 ${s.learned}/${s.total}자 · 오늘 복습 예정 ${s.dueToday}자`;
 }
 updateStudySub();
 
+// 급수 선택 (완전 독립 덱 - 복습/신규 둘 다 이 급수 안에서만 나옴)
+el('studyGradePicker').addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if(!b) return;
+  document.querySelectorAll('#studyGradePicker button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  studyGrade = parseInt(b.dataset.grade);
+  updateStudySub();
+});
+
+// 일일 신규 목표량 선택 (localStorage에 저장해 다음에도 유지)
+el('dailyGoalPicker').addEventListener('click', (e)=>{
+  const b = e.target.closest('button');
+  if(!b) return;
+  document.querySelectorAll('#dailyGoalPicker button').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  dailyGoal = parseInt(b.dataset.goal);
+  localStorage.setItem('hanja-kr-daily-goal', dailyGoal);
+});
+// 저장된 목표량이 기본 버튼 4개 중 하나면 표시 갱신
+(function initGoalPicker(){
+  document.querySelectorAll('#dailyGoalPicker button').forEach(b=>{
+    b.classList.toggle('active', parseInt(b.dataset.goal) === dailyGoal);
+  });
+})();
+
 el('dailyStudyBtn').addEventListener('click', ()=>{
-  const q = srs.buildDailyQueue(KR_ALL_DATA, DAILY_NEW_LIMIT, new Date());
+  const scope = KRDATA_BY_GRADE[studyGrade]; // 급수 독립: 복습/신규 둘 다 이 범위 안에서만
+  const q = srs.buildDailyQueue(scope, dailyGoal, new Date());
   studyQueue = shuffle(q.review.concat(q.new));
   if(studyQueue.length === 0){
     startScreen.classList.add('hidden');
@@ -400,6 +437,7 @@ el('studyRevealBtn').addEventListener('click', ()=>{
 
 function rateCurrentAndAdvance(rating){
   srs.rate(studyCurrent.c, rating, new Date());
+  if(sync) sync.pushCard(studyCurrent.c); // 로그인 상태면 클라우드에도 이 카드만 반영
   studyIdx++;
   renderStudyCard();
 }
@@ -437,11 +475,36 @@ const firebaseConfig = {
   measurementId: "G-W4EHWZM2DR"
 };
 let database = null;
+let sync = null;
 try {
   firebase.initializeApp(firebaseConfig);
   database = firebase.database();
+  sync = HanjaSync.createSync(database, srs);
+
+  sync.onAuthChange((user) => {
+    const btn = el('loginBtn');
+    if(user){
+      btn.textContent = (user.displayName || '로그인됨').slice(0,8) + ' · 로그아웃';
+      btn.title = user.email ? `${user.email} (클릭하면 로그아웃)` : '클릭하면 로그아웃';
+    } else {
+      btn.textContent = '로그인';
+      btn.title = 'Google 로그인 (일일 학습 기록 동기화)';
+    }
+    updateStudySub(); // 로그인 시 병합된 최신 학습량으로 갱신
+  });
+
+  el('loginBtn').addEventListener('click', () => {
+    if(sync.getCurrentUser()){
+      sync.signOut();
+    } else {
+      sync.signIn().catch(err => {
+        console.error('로그인 실패:', err);
+        alert('로그인에 실패했습니다: ' + err.message);
+      });
+    }
+  });
 } catch(e) {
-  console.warn('Firebase 설정이 아직 없습니다. 리더보드 기능은 비활성 상태입니다.', e);
+  console.warn('Firebase 설정이 아직 없습니다. 리더보드/동기화 기능은 비활성 상태입니다.', e);
 }
 
 function categoryKeyFor(){

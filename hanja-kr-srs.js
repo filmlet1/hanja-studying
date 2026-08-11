@@ -78,35 +78,36 @@
     }
 
     /**
-     * 오늘 학습할 큐를 만듦: 복습(기한 도래) + 신규(아직 상태 없는 한자, 개수 제한).
-     * @param {Array<{c:string}>} scopeData - 신규 카드 후보 전체 목록 (보통 KR_ALL_DATA)
+     * 오늘 학습할 큐를 만듦. 급수는 완전히 독립된 덱으로 취급함
+     * (복습도 신규도 전부 해당 급수 스코프 안에서만 나옴 - 다른 급수와 안 섞임).
+     * - 복습: scopeData 안에서 기한 도래한 것 전부
+     * - 신규: scopeData 안에서 아직 상태 없는 것, newLimit개까지
+     * @param {Array<{c:string}>} scopeData - 해당 급수의 단독 목록 (누적 아님)
      * @param {number} newLimit - 하루 신규 카드 최대 개수
      * @param {Date} now
-     * @returns {{review: Array, new: Array}} - 각각 scopeData의 원소(한자 데이터 객체) 배열
+     * @returns {{review: Array, new: Array}}
      */
     function buildDailyQueue(scopeData, newLimit, now){
       now = now || new Date();
       const all = loadAll();
       const today = toDateOnly(now);
-
-      const review = [];
-      const seen = new Set(); // scopeData 안에 있는 한자들만 취급 (스코프 밖 상태는 무시)
       const scopeChars = new Set(scopeData.map(item => item.c));
 
+      const review = [];
+      const learnedInScope = new Set();
       Object.keys(all).forEach(char => {
-        if(!scopeChars.has(char)) return; // 이 스코프에 속하지 않는 한자는 큐에서 제외
-        const card = all[char];
-        const due = toDateOnly(new Date(card.due));
+        if(!scopeChars.has(char)) return; // 다른 급수의 상태는 이 큐에 전혀 영향 안 줌
+        learnedInScope.add(char);
+        const due = toDateOnly(new Date(all[char].due));
         if(due <= today){
           review.push(char);
         }
-        seen.add(char);
       });
 
       const newChars = [];
       for(const item of scopeData){
         if(newChars.length >= newLimit) break;
-        if(!seen.has(item.c)){
+        if(!learnedInScope.has(item.c)){
           newChars.push(item.c);
         }
       }
