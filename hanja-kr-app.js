@@ -306,6 +306,10 @@ function finishGame(){
 
   const rankWrap = el('rankSubmitWrap');
   const blockedMsg = el('rankBlockedMsg');
+  const rankBtn = el('rankSubmitBtn');
+  rankBtn.disabled = false;
+  rankBtn.textContent = '랭킹 등록';
+  el('nicknameInput').value = '';
   if(revealRate > 20){
     rankWrap.classList.add('hidden');
     blockedMsg.classList.remove('hidden');
