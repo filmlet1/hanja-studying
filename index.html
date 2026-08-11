@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한자능력검정시험 학습 — 급수별 훈음 완주</title>
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Noto+Serif+JP:wght@500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Firebase SDK (CDN) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="hanja-kr-styles.css">
+</head>
+<body>
+<div class="board">
+
+  <div class="line-title">
+    <span class="name">한자능력검정시험 학습</span>
+    <span class="line-title-right">
+      <span class="sub" id="lineSub">급수별 훈음 완주</span>
+      <button id="themeToggle" class="theme-toggle" title="라이트/다크 모드 전환" aria-label="테마 전환">🌙</button>
+    </span>
+  </div>
+
+  <div id="startScreen" class="screen">
+    <h1>한자능력검정시험 학습</h1>
+    <p>한자가 뜨면 훈음을 입력하세요 (예: 학교교, 띄어쓰기는 무시됩니다).<br>훈음이 여러 개인 한자는 그중 하나만 맞혀도 통과합니다.</p>
+
+    <div class="setup-card">
+      <div class="group-label">급수 (한국어문회 기준)</div>
+      <div class="lengths lengths-grid3" id="gradePicker">
+        <button data-grade="1">8급 (50자)</button>
+        <button data-grade="2">7급Ⅱ (100자)</button>
+        <button data-grade="3">7급 (150자)</button>
+        <button data-grade="4">6급Ⅱ (225자)</button>
+        <button data-grade="5">6급 (300자)</button>
+        <button data-grade="6">5급Ⅱ (400자)</button>
+        <button data-grade="7">5급 (500자)</button>
+        <button data-grade="8">4급Ⅱ (750자)</button>
+        <button data-grade="9" class="active">4급 (1,000자)</button>
+        <button data-grade="10">3급Ⅱ (1,500자)</button>
+        <button data-grade="11">3급 (1,817자)</button>
+        <button data-grade="12">2급 (2,355자)</button>
+        <button data-grade="13">1급 (3,500자)</button>
+        <button data-grade="14">특급Ⅱ (4,650자)</button>
+        <button data-grade="15">특급 (5,978자)</button>
+      </div>
+
+      <div class="group-label">구간</div>
+      <div class="lengths" id="lengthPicker"></div>
+
+      <button class="primary go" id="startBtn">출발 →</button>
+    </div>
+
+    <div class="start-leaderboard">
+      <div class="bestlist">
+        <div class="title" id="startBestTitle">랭킹 · TOP 10</div>
+        <div id="startBestRows"><div class="row"><span>불러오는 중...</span></div></div>
+      </div>
+    </div>
+
+    <!-- 일일 학습: 추후 SRS(간격 반복) 기능으로 구현 예정, 현재는 자리만 잡아둠 -->
+    <div class="weekly-card" style="opacity:0.6;">
+      <div class="weekly-card-head">
+        <span class="weekly-badge">한자 일일 학습</span>
+        <span class="weekly-sub">망각곡선 기반 복습 · COMING SOON</span>
+      </div>
+      <button class="primary go weekly-go" id="dailyStudyBtn" disabled style="cursor:not-allowed;">준비 중입니다</button>
+    </div>
+  </div>
+
+  <div id="gameScreen" class="hidden">
+    <div class="game-top">
+      <button id="quitBtn" class="quit">← 처음으로</button>
+    </div>
+    <div class="track" id="track"></div>
+    <div class="rail"></div>
+
+    <div class="flapcard" id="flapcard">
+      <div class="kanji" id="kanjiDisplay">一</div>
+      <div class="slots" id="slots"></div>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="answerInput" placeholder="훈음 입력 (예: 학교교) 후 Enter" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="primary" id="submitBtn">확인</button>
+    </div>
+    <div class="help-row">
+      <button id="hintBtn" class="hidden">힌트</button>
+      <button id="giveupBtn" class="giveup">모르겠어요 · 정답 보기</button>
+      <span class="hint-text" id="hintText"></span>
+    </div>
+
+    <div class="stats">
+      <span>경과 <b id="statTime">0:00</b></span>
+      <span>정확도 <b id="statAcc">100%</b></span>
+      <span>오답 <b id="statMiss">0</b></span>
+      <span>정답보기 <b id="statReveal">0</b></span>
+      <span><b id="statPos">1</b>/<span id="statTotal">50</span></span>
+    </div>
+  </div>
+
+<div id="resultScreen" class="hidden screen">
+    <h1>완주</h1>
+    <p>모두 완주했습니다.</p>
+    <div class="result-grid">
+      <div class="result-cell"><div class="v" id="resTime">0:00</div><div class="l">기록</div></div>
+      <div class="result-cell"><div class="v" id="resAcc">100%</div><div class="l">정확도</div></div>
+      <div class="result-cell"><div class="v" id="resMiss">0</div><div class="l">오답</div></div>
+      <div class="result-cell"><div class="v" id="resReveal">0</div><div class="l">정답보기</div></div>
+    </div>
+
+    <div id="rankSubmitWrap" class="hidden" style="margin-bottom: 20px; display: flex; gap: 8px; justify-content: center;">
+      <input type="text" id="nicknameInput" placeholder="닉네임 입력 (최대 8자)" maxlength="8" style="max-width: 200px; padding: 8px 12px; font-size: 14px;">
+      <button class="primary" id="rankSubmitBtn" style="padding: 8px 16px;">랭킹 등록</button>
+    </div>
+    <div id="rankBlockedMsg" class="hidden rank-blocked-msg"></div>
+
+    <div class="bestlist">
+      <div class="title" id="bestTitle">전 세계 랭킹 · TOP 10</div>
+      <div id="bestRows"></div>
+    </div>
+    <button class="primary go" id="againBtn">다시 도전 →</button>
+  </div>
+
+  <div class="footer-note" id="footerNote">한자능력검정시험 학습 v0.1 · 데이터 출처: 한국어문회(hanja.re.kr)</div>
+</div>
+
+<script src="hanja-kr-data.js"></script>
+<script src="hanja-kr-app.js"></script>
+</body>
+</html>
