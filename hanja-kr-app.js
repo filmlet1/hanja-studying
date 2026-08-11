@@ -63,6 +63,7 @@ el('gradePicker').addEventListener('click', (e)=>{
   b.classList.add('active');
   currentGrade = parseInt(b.dataset.grade);
   renderLengthPicker();
+  loadStartLeaderboard();
 });
 
 el('lengthPicker').addEventListener('click', (e)=>{
@@ -71,6 +72,7 @@ el('lengthPicker').addEventListener('click', (e)=>{
   document.querySelectorAll('#lengthPicker button').forEach(x=>x.classList.remove('active'));
   b.classList.add('active');
   currentLen = parseInt(b.dataset.len);
+  loadStartLeaderboard();
 });
 
 renderLengthPicker(100);
@@ -332,9 +334,6 @@ el('againBtn').addEventListener('click', ()=>{
 el('startBtn').addEventListener('click', startGame);
 
 // --- Firebase 리더보드 ---
-// TODO: 이 프로젝트는 기존 "한자 타이핑"과 별개 사이트이므로,
-// Firebase 콘솔에서 새 프로젝트를 만들고 아래 설정값을 교체해야 합니다.
-// (Realtime Database 사용, 기존 프로젝트의 config를 그대로 쓰면 데이터가 섞입니다.)
 const firebaseConfig = {
   apiKey: "AIzaSyDV2_R9rz7_pS-X1ThhSfCfmdlTwrzji4g",
   authDomain: "hanja-studying.firebaseapp.com",
@@ -350,7 +349,7 @@ try {
   firebase.initializeApp(firebaseConfig);
   database = firebase.database();
 } catch(e) {
-  console.warn('Firebase 설정이 아직 없습니다. 리더보드 기능은 비활성 상태입니다.', e);
+  console.warn('Firebase 초기화 실패. 리더보드 기능은 비활성 상태입니다.', e);
 }
 
 function categoryKeyFor(){
@@ -363,6 +362,9 @@ function submitGlobalScore(nickname, timeSec, acc, miss, reveal){
   const categoryKey = categoryKeyFor();
   database.ref(`leaderboards/${categoryKey}`).push({
     nickname, time: timeSec, acc, miss, reveal, ts: Date.now()
+  }).catch(err => {
+    console.error('랭킹 등록 실패:', err.message);
+    alert('랭킹 등록에 실패했습니다: ' + err.message);
   });
 }
 
@@ -399,7 +401,10 @@ function loadGlobalLeaderboard(){
   el('bestTitle').textContent = GRADES[currentGrade].label + ' · ' + ROUND.length + '자 · TOP 10';
   database.ref(`leaderboards/${categoryKey}`).orderByChild('time').limitToFirst(10).once('value')
     .then(snapshot => renderLeaderboardSnapshot(el('bestRows'), snapshot))
-    .catch(()=>{ el('bestRows').innerHTML = '<div class="row"><span>불러오기 실패</span></div>'; });
+    .catch((err)=>{
+      console.error('랭킹 불러오기 실패:', err.message);
+      el('bestRows').innerHTML = '<div class="row"><span>불러오기 실패: ' + err.message + '</span></div>';
+    });
 }
 
 function loadStartLeaderboard(){
@@ -409,7 +414,10 @@ function loadStartLeaderboard(){
   el('startBestTitle').textContent = g.label + ' · ' + currentLen + '자 · TOP 10';
   database.ref(`leaderboards/${categoryKey}`).orderByChild('time').limitToFirst(10).once('value')
     .then(snapshot => renderLeaderboardSnapshot(el('startBestRows'), snapshot))
-    .catch(()=>{ el('startBestRows').innerHTML = '<div class="row"><span>불러오기 실패</span></div>'; });
+    .catch((err)=>{
+      console.error('랭킹 불러오기 실패:', err.message);
+      el('startBestRows').innerHTML = '<div class="row"><span>불러오기 실패: ' + err.message + '</span></div>';
+    });
 }
 
 loadStartLeaderboard();
