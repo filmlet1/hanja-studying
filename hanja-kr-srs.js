@@ -33,7 +33,7 @@
     return Math.round((toDateOnly(b) - toDateOnly(a)) / DAY_MS);
   }
   function plusMinutes(now, min){ return new Date(now.getTime() + min * MIN_MS); }
-  function plusDays(now, days){ return new Date(toDateOnly(now).getTime() + days * DAY_MS); }
+  function plusDays(now, days){ return new Date(now.getTime() + days * DAY_MS); } // 자정이 아니라 '지금'부터 N일 뒤
 
   const R = () => global.FSRS.Rating; // 지연 참조 (fsrs-kr.js 로드 순서 보장용)
 
