@@ -197,6 +197,8 @@
     text-align:center;
   }
   .weekly-card-head{ margin-bottom:18px; }
+  .rating-row{ display:flex; gap:8px; margin-top:16px; }
+  .rating-row button{ flex:1; padding:12px 8px; }
   .weekly-badge{
     display:inline-block; font-family:var(--sans); font-size:10.5px; letter-spacing:0.1em;
     color:var(--amber); border:1px solid var(--amber); background:transparent;

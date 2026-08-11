@@ -61,14 +61,46 @@
       </div>
     </div>
 
-    <!-- 일일 학습: 추후 SRS(간격 반복) 기능으로 구현 예정, 현재는 자리만 잡아둠 -->
-    <div class="weekly-card" style="opacity:0.6;">
+    <!-- 한자 일일 학습: FSRS(안정성/난이도 기반) 간격 반복 학습 -->
+    <div class="weekly-card">
       <div class="weekly-card-head">
         <span class="weekly-badge">한자 일일 학습</span>
-        <span class="weekly-sub">망각곡선 기반 복습 · COMING SOON</span>
+        <span class="weekly-sub" id="studySub">망각곡선 기반 복습</span>
       </div>
-      <button class="primary go weekly-go" id="dailyStudyBtn" disabled style="cursor:not-allowed;">준비 중입니다</button>
+      <button class="primary go weekly-go" id="dailyStudyBtn">한자 일일 학습 시작 →</button>
     </div>
+  </div>
+
+  <div id="studyScreen" class="hidden">
+    <div class="game-top">
+      <button id="studyQuitBtn" class="quit">← 처음으로</button>
+    </div>
+    <div class="stats" style="margin-bottom:14px;">
+      <span>복습 <b id="studyReviewCount">0</b></span>
+      <span>신규 <b id="studyNewCount">0</b></span>
+      <span>남음 <b id="studyRemaining">0</b></span>
+    </div>
+
+    <div class="flapcard" id="studyCard">
+      <div class="kanji" id="studyKanji">一</div>
+      <div id="studyAnswer" class="kr-reading hidden"></div>
+    </div>
+
+    <div class="input-row" id="studyRevealRow">
+      <button class="primary go" id="studyRevealBtn" style="width:100%;">정답 보기</button>
+    </div>
+    <div class="rating-row hidden" id="studyRatingRow">
+      <button class="giveup" id="rateAgain">다시</button>
+      <button id="rateHard">어려움</button>
+      <button class="primary" id="rateGood">알맞음</button>
+      <button id="rateEasy">쉬움</button>
+    </div>
+  </div>
+
+  <div id="studyDoneScreen" class="hidden screen">
+    <h1>오늘 학습 완료</h1>
+    <p>오늘 분량을 모두 마쳤습니다. 내일 또 만나요!</p>
+    <button class="primary go" id="studyDoneBtn">처음으로 →</button>
   </div>
 
   <div id="gameScreen" class="hidden">
@@ -129,6 +161,8 @@
 </div>
 
 <script src="hanja-kr-data.js"></script>
+<script src="fsrs-kr.js"></script>
+<script src="hanja-kr-srs.js"></script>
 <script src="hanja-kr-app.js"></script>
 </body>
 </html>
