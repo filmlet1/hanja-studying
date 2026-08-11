@@ -364,8 +364,9 @@ const KRDATA_BY_GRADE = {
 function updateStudySub(){
   const scope = KRDATA_BY_GRADE[studyGrade];
   const s = srs.stats(scope);
-  const gradeLabel = GRADES[studyGrade].label;
-  el('studySub').textContent = `${gradeLabel} 학습 ${s.learned}/${s.total}자 · 오늘 복습 예정 ${s.dueToday}자`;
+  el('studyGradeName').textContent = GRADES[studyGrade].label;
+  el('studyLearnedNum').textContent = s.learned;
+  el('studyDueNum').textContent = s.dueToday;
 }
 updateStudySub();
 
@@ -379,21 +380,15 @@ el('studyGradePicker').addEventListener('click', (e)=>{
   updateStudySub();
 });
 
-// 일일 신규 목표량 선택 (localStorage에 저장해 다음에도 유지)
-el('dailyGoalPicker').addEventListener('click', (e)=>{
-  const b = e.target.closest('button');
-  if(!b) return;
-  document.querySelectorAll('#dailyGoalPicker button').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active');
-  dailyGoal = parseInt(b.dataset.goal);
+// 일일 신규 목표량 - 슬라이더 (5~100, 5 단위, 기본 20)
+const goalSlider = el('dailyGoalSlider');
+goalSlider.value = dailyGoal;
+el('dailyGoalValue').textContent = dailyGoal + '자';
+goalSlider.addEventListener('input', ()=>{
+  dailyGoal = parseInt(goalSlider.value);
+  el('dailyGoalValue').textContent = dailyGoal + '자';
   localStorage.setItem('hanja-kr-daily-goal', dailyGoal);
 });
-// 저장된 목표량이 기본 버튼 4개 중 하나면 표시 갱신
-(function initGoalPicker(){
-  document.querySelectorAll('#dailyGoalPicker button').forEach(b=>{
-    b.classList.toggle('active', parseInt(b.dataset.goal) === dailyGoal);
-  });
-})();
 
 el('dailyStudyBtn').addEventListener('click', ()=>{
   const scope = KRDATA_BY_GRADE[studyGrade]; // 급수 독립: 복습/신규 둘 다 이 범위 안에서만
@@ -433,11 +428,27 @@ el('studyRevealBtn').addEventListener('click', ()=>{
   answerEl.classList.remove('hidden');
   el('studyRevealRow').classList.add('hidden');
   el('studyRatingRow').classList.remove('hidden');
+
+  const preview = srs.previewIntervals(studyCurrent.c, new Date());
+  el('previewAgain').textContent = preview.again;
+  el('previewHard').textContent = preview.hard;
+  el('previewGood').textContent = preview.good;
+  el('previewEasy').textContent = preview.easy;
 });
 
+// 학습(learning)/재학습(relearning) 단계라 아직 졸업 못한 카드를 같은 세션 안에 다시 끼워넣을 위치 (안키처럼 몇 장 뒤에 재등장)
+const REQUEUE_OFFSET = 3;
+
 function rateCurrentAndAdvance(rating){
-  srs.rate(studyCurrent.c, rating, new Date());
+  const card = srs.rate(studyCurrent.c, rating, new Date());
   if(sync) sync.pushCard(studyCurrent.c); // 로그인 상태면 클라우드에도 이 카드만 반영
+
+  if(card.state === 'learning' || card.state === 'relearning'){
+    // 아직 장기 복습으로 졸업 못했으면, 몇 분 뒤가 아니라 "몇 장 뒤"로 같은 세션에 다시 끼워넣음
+    const insertAt = Math.min(studyIdx + 1 + REQUEUE_OFFSET, studyQueue.length);
+    studyQueue.splice(insertAt, 0, studyCurrent);
+  }
+
   studyIdx++;
   renderStudyCard();
 }

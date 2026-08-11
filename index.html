@@ -67,10 +67,20 @@
     <div class="weekly-card">
       <div class="weekly-card-head">
         <span class="weekly-badge">한자 일일 학습</span>
-        <span class="weekly-sub" id="studySub">망각곡선 기반 복습</span>
+      </div>
+      <div class="study-stats" id="studySub">
+        <span class="study-grade-name" id="studyGradeName">8급</span> 학습
+        <span class="study-num study-num-learned" id="studyLearnedNum">0</span>자 ·
+        오늘 복습 예정 <span class="study-num study-num-due" id="studyDueNum">0</span>자
       </div>
 
-      <div class="group-label" style="text-align:left;">오늘 새로 배울 급수</div>
+      <div class="group-label" style="text-align:left;">일일 신규 목표량</div>
+      <div class="goal-slider-row">
+        <input type="range" id="dailyGoalSlider" min="5" max="100" step="5" value="20">
+        <span class="goal-slider-value" id="dailyGoalValue">20자</span>
+      </div>
+
+      <div class="group-label" style="text-align:left; margin-top:14px;">학습 급수</div>
       <div class="lengths lengths-grid3" id="studyGradePicker">
         <button data-grade="1">8급</button>
         <button data-grade="2">7급Ⅱ</button>
@@ -87,14 +97,6 @@
         <button data-grade="13">1급</button>
         <button data-grade="14">특급Ⅱ</button>
         <button data-grade="15">특급</button>
-      </div>
-
-      <div class="group-label" style="text-align:left; margin-top:14px;">일일 신규 목표량</div>
-      <div class="lengths" id="dailyGoalPicker">
-        <button data-goal="10">10자</button>
-        <button data-goal="20" class="active">20자</button>
-        <button data-goal="30">30자</button>
-        <button data-goal="50">50자</button>
       </div>
 
       <button class="primary go weekly-go" id="dailyStudyBtn" style="margin-top:16px;">한자 일일 학습 시작 →</button>
@@ -120,10 +122,10 @@
       <button class="primary go" id="studyRevealBtn" style="width:100%;">정답 보기</button>
     </div>
     <div class="rating-row hidden" id="studyRatingRow">
-      <button class="giveup" id="rateAgain">다시</button>
-      <button id="rateHard">어려움</button>
-      <button id="rateGood">알맞음</button>
-      <button id="rateEasy">쉬움</button>
+      <button class="giveup" id="rateAgain">다시<span class="rate-preview" id="previewAgain"></span></button>
+      <button id="rateHard">어려움<span class="rate-preview" id="previewHard"></span></button>
+      <button id="rateGood">알맞음<span class="rate-preview" id="previewGood"></span></button>
+      <button id="rateEasy">쉬움<span class="rate-preview" id="previewEasy"></span></button>
     </div>
   </div>
 
