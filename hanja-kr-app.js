@@ -336,10 +336,14 @@ el('startBtn').addEventListener('click', startGame);
 // Firebase 콘솔에서 새 프로젝트를 만들고 아래 설정값을 교체해야 합니다.
 // (Realtime Database 사용, 기존 프로젝트의 config를 그대로 쓰면 데이터가 섞입니다.)
 const firebaseConfig = {
-  apiKey: "REPLACE_ME",
-  authDomain: "REPLACE_ME.firebaseapp.com",
-  databaseURL: "https://REPLACE_ME.firebaseio.com",
-  projectId: "REPLACE_ME",
+  apiKey: "AIzaSyDV2_R9rz7_pS-X1ThhSfCfmdlTwrzji4g",
+  authDomain: "hanja-studying.firebaseapp.com",
+  databaseURL: "https://hanja-studying-default-rtdb.firebaseio.com",
+  projectId: "hanja-studying",
+  storageBucket: "hanja-studying.firebasestorage.app",
+  messagingSenderId: "334495234070",
+  appId: "1:334495234070:web:36255e6ed4b6a810cf9d37",
+  measurementId: "G-W4EHWZM2DR"
 };
 let database = null;
 try {
