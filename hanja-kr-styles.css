@@ -192,7 +192,7 @@
 
   .weekly-card{
     border:1.5px solid var(--border); border-radius:14px;
-    padding:22px 22px 20px; margin-bottom:28px;
+    padding:22px 22px 20px; margin-top:26px; margin-bottom:28px;
     background:var(--bg);
     text-align:center;
   }
